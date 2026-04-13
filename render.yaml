@@ -1,0 +1,50 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: email-analytics-db
+    env: docker
+    plan: free
+    databases:
+      - name: email_analytics
+        user: postgres
+
+  # Backend API
+  - type: web
+    name: email-analytics-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: email-analytics-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: email-analytics-db
+          property: port
+      - key: DB_NAME
+        value: email_analytics
+      - key: DB_USER
+        fromDatabase:
+          name: email-analytics-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: email-analytics-db
+          property: password
+
+  # Frontend
+  - type: web
+    name: email-analytics-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: email-analytics-backend
+          envVarKey: RENDER_EXTERNAL_URL
