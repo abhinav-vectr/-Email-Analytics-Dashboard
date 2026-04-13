@@ -11,8 +11,8 @@ from datetime import datetime
 from collections import Counter
 import re
 
-from backend.database import get_db, engine
-from backend.models import Base, Email
+from database import get_db, engine
+from models import Base, Email
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
